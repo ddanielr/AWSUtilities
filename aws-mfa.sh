@@ -32,8 +32,6 @@ AWS_CLI=`which aws`
 if [ $? -ne 0 ]; then
   echo "AWS CLI is not installed; exiting"
   exit 1
-else
-  echo "Using AWS CLI found at $AWS_CLI"
 fi
 
 if [ -z ${AWS_PROFILE+x} ]; then
@@ -54,11 +52,7 @@ if [ -z ${MFA_TOKEN+x} ]; then
      read MFA_TOKEN
 fi
 
-echo "AWS PROFILE: $AWS_PROFILE"
-echo "MFA ARN: $MFA"
-echo "MFA Token Code: $MFA_TOKEN"
+call=$(aws --profile $AWS_PROFILE sts get-session-token --serial-number $MFA --token-code $MFA_TOKEN) 
+aws_vars=$( echo $call | jq -r '( .Credentials | ("export AWS_SECRET_ACCESS_KEY=" + .SecretAccessKey)) + "\n" + (.Credentials | ("export AWS_SESSION_TOKEN=" + .SessionToken)) + "\n" + ( .Credentials | ("export AWS_ACCESS_KEY_ID=" + .AccessKeyId))')
+echo "$aws_vars"
 
-echo "aws --profile $AWS_PROFILE sts get-session-token --serial-number $MFA --token-code $MFA_TOKEN --output text" | bash | awk '{printf("export AWS_ACCESS_KEY_ID=\"%s\"\nexport AWS_SECRET_ACCESS_KEY=\"%s\"\nexport AWS_SESSION_TOKEN=\"%s\"\n",$2,$4,$5)}' | bash
-
-echo "MFA keys have been exported to your environment"
-env | grep AWS
