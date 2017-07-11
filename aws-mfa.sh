@@ -3,7 +3,7 @@
 # jq must be installed along with awscli"
 set -e 
 
-while [[ $# -gt 1 ]]
+while [[ $# -gt 0 ]]
 do
 key="$1"
 
@@ -16,8 +16,12 @@ case $key in
     MFA_TOKEN="$2"
     shift # past argument
     ;;
-    *)
-          # unknown option
+    -?|--help|-h)
+    echo "Usage: $0 -p [profile] -t [token]";
+    echo "options:";
+    echo "     -p, --profile = Profile name of matching AWS profile in ~/.aws/config";
+    echo "     -t, --token = MFA token string to be passed to aws cli call";
+    exit 0
     ;;
 esac
 shift 
