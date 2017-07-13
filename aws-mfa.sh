@@ -45,14 +45,14 @@ if [ -z ${AWS_PROFILE+x} ]; then
         fi
      done
 fi
-MFA=$(echo "aws iam list-mfa-devices --profile $AWS_PROFILE | jq -r .MFADevices[0].SerialNumber" | bash ) 
+MFA=$(echo "aws iam list-mfa-devices --profile $AWS_PROFILE --output json | jq -r .MFADevices[0].SerialNumber" | bash ) 
 
 if [ -z ${MFA_TOKEN+x} ]; then
      echo "Enter the MFA Token Code for the AWS profile:  $AWS_PROFILE"
      read MFA_TOKEN
 fi
 
-call=$(aws --profile $AWS_PROFILE sts get-session-token --serial-number $MFA --token-code $MFA_TOKEN) 
+call=$(aws --profile $AWS_PROFILE sts get-session-token --serial-number $MFA --token-code $MFA_TOKEN --output json) 
 aws_vars=$( echo $call | jq -r '( .Credentials | ("export AWS_SECRET_ACCESS_KEY=" + .SecretAccessKey)) + "\n" + (.Credentials | ("export AWS_SESSION_TOKEN=" + .SessionToken)) + "\n" + ( .Credentials | ("export AWS_ACCESS_KEY_ID=" + .AccessKeyId))')
 echo "$aws_vars"
 
